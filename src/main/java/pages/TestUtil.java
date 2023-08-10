@@ -8,7 +8,6 @@ import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.Date;
 import java.util.IllegalFormatException;
 import org.openqa.selenium.JavascriptExecutor;
