@@ -1,14 +1,22 @@
 pipeline {
-        agent none
-        stages {
-
-           stage('Build'){
-               agent any
-                steps{
-                    echo 'Building'
-                 }
-           }
-          stage("Sonar Qube Build Analysis") {
+    agent any
+	tools {
+	    maven "M3"
+	 	}
+	stages {
+	    stage('Git CheckOut') {
+		    steps {
+			   git url: 'https://github.com/Priya141092/JenkinsInt.git'
+			}
+		}
+		
+	
+        stage('Clean and Install') {
+            steps {
+                bat 'mvn clean install'
+            }
+        }
+       	stage("Sonar Qube Build Analysis") {
             agent any
             steps {
               withSonarQubeEnv('SonarQube') {
@@ -16,9 +24,39 @@ pipeline {
               }
             }
           }
-          
+	stage ('Server'){
+            steps {
+               rtServer (
+                 id: "Artifactory",
+                 url: 'http://localhost:8082/artifactory',
+                 username: 'admin',
+                  password: 'Password@123',
+                  bypassProxy: true,
+                   timeout: 300
+                        )
+            }
         }
+        stage('Upload'){
+            steps{
+                rtUpload (
+                 serverId:"Artifactory" ,
+                  spec: '''{
+                   "files": [
+                      {
+                      "pattern": "*.war",
+                      "target": "NewRepo"
+                      }
+                            ]
+                           }''',
+                        )
+            }
+        }
+        stage ('Publish build info') {
+            steps {
+                rtPublishBuildInfo (
+                    serverId: "Artifactory"
+                )
+            }
+        }
+    }
 }
-    
-    
-        
